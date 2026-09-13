@@ -129,7 +129,7 @@ public class TGrafo {
 				}
 			}
 		}
-		System.out.println("FIM - DFS");
+		System.out.println("");
 	}
 
 
@@ -166,7 +166,7 @@ public class TGrafo {
 				}
 			}
 		}
-		System.out.println("FIM - BFS");
+		System.out.println("");
 
 
 

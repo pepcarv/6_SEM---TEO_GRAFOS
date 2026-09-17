@@ -26,7 +26,12 @@ public class TesteGrafoMatriz {
 		g10.buscaEmProfundidade(0); // DFS a partir de a
 		g10.buscaEmLargura(0); // BFS a partir de a
 
+		System.out.println("\nConexidade de G10: " + g10.testeConexidade());
 
+		System.out.println("==================================");
+		
+		
+		
 		// G9: Grafo não direcionado (4 vértices: a,b,c,d)
 		TGrafo g9 = new TGrafo(4);
 
@@ -41,5 +46,7 @@ public class TesteGrafoMatriz {
 		System.out.println("\nBuscas começando em a (G9 - não dir)");
 		g9.buscaEmProfundidade(0); // DFS a partir de a
 		g9.buscaEmLargura(0); // BFS a partir de a
+
+		System.out.println("\nConexidade de g9: " + g9.testeConexidade());
 	}
 }

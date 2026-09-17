@@ -105,30 +105,8 @@ public class TGrafo {
 	// Percurso em Profundidade - DFS)
 	public void buscaEmProfundidade(int nInicial) {
 		desmarcaTudo();
-		Pilha pilha = new Pilha(this.m + 1); // qtd de arestas + nó inicial
-
 		System.out.print("DFS começando em " + letraVet[nInicial] + ": ");
-
-		pilha.push(nInicial); //empilha nó inicial n na pilha P
-
-
-
-		while (!pilha.isEmpty()) {// Enquanto a pilha P não estiver vazia
-			int node = pilha.pop();// n <- pop(P)
-
-			if (!marcado[node]) {// se n ainda não foi visitado
-				visita(node);// O nó n é visitado
-				marcado[node] = true;// O nó n é marcado
-
-				for (int adjacente = n - 1; adjacente >= 0; adjacente--) {
-					if (adj[node][adjacente] == 1 && !marcado[adjacente]) { // nó m não marcado e adjacente a n
-						pilha.push(adjacente); // O nó m é colocado na pilha P
-
-
-					}
-				}
-			}
-		}
+		bscDFS(nInicial, this.adj, true);
 		System.out.println("");
 	}
 
@@ -138,37 +116,158 @@ public class TGrafo {
 	// Percurso em Largura - BFS
 	public void buscaEmLargura(int nInicial) {
 		desmarcaTudo();
-		FilaCircular fila = new FilaCircular(n); // TAM: qtd de vértices
-		int node = nInicial;
-
 		System.out.print("BFS começando em " + letraVet[nInicial] + ": ");
+		bscBFS(nInicial, this.adj, true);
+		System.out.println("");
+	}
 
-		
-		visita(node);// visita um nó n selecionado
-		marcado[node] = true; // marca n
-		fila.enqueue(node); // insere n na fila
 
-		
-		
-		while (!fila.qIsEmpty()) { // enquanto a fila não estiver vazia
-			node = fila.dequeue(); // retira um elemento da fila F e atribui ao nó n
-			
-			for (int adjacente = 0; adjacente < n; adjacente++) {
-				
-				if (adj[node][adjacente] == 1 && !marcado[adjacente]) { // nó m não marcado e adjacente a n
-					
-					
-					visita(adjacente);// m é visitado
-					fila.enqueue(adjacente);// m é colocado na fila
-					marcado[adjacente] = true;// e m é marcado
-				
-				
+	// dfs e bfs adaptados (comparados com ultimo commit) para conexidade
+	//mesma logic
+	private void bscDFS(int nInicial, int[][] matriz, boolean imprimir) {
+		Pilha pilha = new Pilha(this.n * this.n + 1); // capacidade segura
+
+		pilha.push(nInicial); //empilha nó inicial n na pilha P
+
+		while (!pilha.isEmpty()) {// Enquanto a pilha P não estiver vazia
+			int node = pilha.pop();// n <- pop(P)
+
+			if (!marcado[node]) {// se n ainda não foi visitado
+				if (imprimir) visita(node);// O nó n é visitado
+				marcado[node] = true;// O nó n é marcado
+
+				for (int adjacente = n - 1; adjacente >= 0; adjacente--) {
+					if (matriz[node][adjacente] == 1 && !marcado[adjacente]) { // nó m não marcado e adjacente a n
+						pilha.push(adjacente); // O nó m é colocado na pilha P
+					}
 				}
 			}
 		}
-		System.out.println("");
+	}
+
+	private void bscBFS(int nInicial, int[][] matriz, boolean imprimir) {
+		FilaCircular fila = new FilaCircular(n); // TAM: qtd de vértices
+		int node = nInicial;
+
+		if (imprimir) visita(node);// visita um nó n selecionado
+		marcado[node] = true; // marca n
+		fila.enqueue(node); // insere n na fila
+
+		while (!fila.qIsEmpty()) { // enquanto a fila não estiver vazia
+			node = fila.dequeue(); // retira um elemento da fila F e atribui ao nó n
+
+			for (int adjacente = 0; adjacente < n; adjacente++) {
+				if (matriz[node][adjacente] == 1 && !marcado[adjacente]) { // nó m não marcado e adjacente a n
+					if (imprimir) visita(adjacente);// m é visitado
+					fila.enqueue(adjacente);// m é colocado na fila
+					marcado[adjacente] = true;// e m é marcado
+				}
+			}
+		}
+	}
 
 
 
+
+
+	// return de cópia do vetor de marcados
+	private boolean[] contVisitadosDFS(int nInicial, int[][] matriz) {
+		desmarcaTudo();
+		bscDFS(nInicial, matriz, false);
+		return marcado.clone();
+	}
+
+
+
+
+
+	// CONEXIDADE
+
+	// C3
+	public boolean eh_c3() {
+		for (int v = 0; v < n; v++) {
+			boolean[] visitados = contVisitadosDFS(v, this.adj);
+			int qtdVisitados = 0;
+			for (int i = 0; i < n; i++)
+				if (visitados[i]) qtdVisitados++;
+
+			if (qtdVisitados != n) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	// C2
+	public boolean eh_c2() {
+		for (int v = 0; v < n; v++) {
+			for (int w = 0; w < n; w++) {
+				if (v == w) continue;
+
+				boolean[] visitadosDeV = contVisitadosDFS(v, this.adj);
+
+				if (!visitadosDeV[w]) {
+					boolean[] visitadosDeW = contVisitadosDFS(w, this.adj);
+
+					if (!visitadosDeW[v]) {
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
+	// C1 / C0 (desconexo)
+	// logica dos slides pro desconexo
+	public boolean eh_desconexo() {
+		int[][] simetrica = new int[n][n];
+
+		//System.out.println("DESCONEX)");
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++) {
+				//System.out.println("["+i+"]"+" ["+j+"]: " + simetrica[i][j]);
+				if (adj[i][j] == 1 || adj[j][i] == 1) {
+					
+					simetrica[i][j] = 1;
+					simetrica[j][i] = 1;
+				}
+			}
+		}
+
+		boolean[] visitados = contVisitadosDFS(0, simetrica);
+
+		int qtdVisitados = 0;
+		for (int i = 0; i < n; i++)
+			if (visitados[i]) qtdVisitados++;
+
+		
+		
+		
+		
+		
+		// se visitou todo mundo, NÃO é desconexo
+		return qtdVisitados != n;
+	}
+
+
+
+
+	public String testeConexidade() {
+		String categoria = "C3";
+
+		if (!eh_c3()) {
+			categoria = "C2";
+
+			if (!eh_c2()) {
+				categoria = "C0";
+
+				if (!eh_desconexo()) {
+					categoria = "C1";
+				}
+			}
+		}
+
+		return categoria;
 	}
 }
